@@ -1,0 +1,8 @@
+I have a few projects form the past, that was developed using aegis
+software configuration manager [http://aegis.sourceforge.net/]. Since
+then I have migrated to tla, and then to git. But I still want some of
+the code, still kept in backups of aegis repository.
+
+This project is an attempt to convert my aegis repository into git
+format. It wasn't meant to be used by end-users. I only care about
+whenever or not this thing will work on my old repos.
