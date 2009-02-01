@@ -11,7 +11,8 @@
          srfi/13
          aegis/read
          aegis/commit)
-(provide ae-read-branch)
+(provide ae-read-branch
+         ae-find)
 
 (define (ae-number->string num)
   (let ((it (number->string num)))
@@ -60,4 +61,12 @@
                                 (read-sub-commit name path sub-branch x))
                               commit)))))))
 
-    
+(define (ae-find info name)
+  (if (string=? (dict-ref info 'branch "") name) info
+      (let ((it (findf (lambda (c) (equal? (dict-ref c 'commit) name))
+                       (dict-ref info 'commit '()))))
+        (if it it
+            (let ((it (dict-ref info 'sub-branch '())))
+              (and (pair? it)
+                   (for/or ((b it)) (ae-find b name))))))))
+
