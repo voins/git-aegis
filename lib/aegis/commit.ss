@@ -34,14 +34,18 @@
             ,@commit)))))
 
 (define (commit-actions fs commit)
+  (define (revision src edit)
+    (dict-ref (dict-ref src edit '()) 'revision #f))
   (dict-set commit 'actions
             (for/fold ((actions '())) ((src (dict-ref fs 'src '())))
-              (dict-set actions
-                        (dict-ref src 'file-name)
-                        (list
-                         (dict-ref src 'action)
-                         (dict-ref (dict-ref src 'edit-origin '()) 'revision #f)
-                         (dict-ref (dict-ref src 'edit '()) 'revision #f))))))
+              (let ((action   (dict-ref src 'action))
+                    (origin   (revision src 'edit-origin))
+                    (revision (revision src 'edit)))
+                (if (and (eq? action 'modify) (equal? origin revision))
+                    actions
+                    (dict-set actions
+                              (dict-ref src 'file-name)
+                              (list action origin revision)))))))
 
 (define (ae-read-commit path)
   (let ((info   (ae-file->value path))
