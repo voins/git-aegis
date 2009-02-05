@@ -38,14 +38,10 @@
     (dict-ref (dict-ref src edit '()) 'revision #f))
   (dict-set commit 'actions
             (for/fold ((actions '())) ((src (dict-ref fs 'src '())))
-              (let ((action   (dict-ref src 'action))
-                    (origin   (revision src 'edit-origin))
-                    (revision (revision src 'edit)))
-                (if (and (eq? action 'modify) (equal? origin revision))
-                    actions
-                    (dict-set actions
-                              (dict-ref src 'file-name)
-                              (list action origin revision)))))))
+              (let ((name   (dict-ref src 'file-name))
+                    (pre    (revision src 'edit-origin))
+                    (post   (revision src 'edit)))
+                (dict-set actions name `(,pre ,post ()))))))
 
 (define (ae-read-commit path)
   (let ((info   (ae-file->value path))
