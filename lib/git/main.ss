@@ -38,15 +38,20 @@
       (system (format "git checkout ~a >/dev/null 2>/dev/null" name))
       (system (format "git checkout -b ~a  >/dev/null 2>/dev/null" name))))
 
-
-(define (run-with-input input command . args)
-  (let* ((proc (process (apply format command args))))
-    (display input (second proc))
+(define (run input command . args)
+  (let* ((proc   (process (apply format command args)))
+         (output (open-output-bytes))
+         (thd    (thread (lambda ()
+                           (display input (second proc))
+                           (close-output-port (second proc))))))
+    (for ((x (first proc))) (write-byte x output))
+    (thread-wait thd)
     (close-input-port (first proc))
-    (close-output-port (second proc))
     (close-input-port (fourth proc))
-    ((fifth proc) 'wait)))
-  
+    ((fifth proc) 'wait)
+    (and (zero? ((fifth proc) 'exit-code))
+         (get-output-string output))))
+
 
 (define (git-commit message
                     #:author (author #f)
@@ -55,9 +60,19 @@
   (let ((author (if author (format "GIT_AUTHOR_NAME=~s " author) ""))
         (email (if email (format "GIT_AUTHOR_EMAIL=~s " email) ""))
         (date (if date (format "GIT_AUTHOR_DATE=~s " date) "")))
-  (run-with-input message "env ~a~a~a git commit -F - >/dev/null 2>/dev/null"
-                  author email date)))
+  (run message "env ~a~a~a git commit -F - >/dev/null 2>/dev/null"
+       author email date)))
 
 
 (define (git-tag name message)
-  (run-with-input message "git tag -F - ~a >/dev/null 2>/dev/null" name))
+  (run message "git tag -F - ~a >/dev/null 2>/dev/null" name))
+
+
+(define (git-mktree content)
+  (run content "git mktree"))
+
+(define (git-commit-tree message tree)
+  (run message "git commit-tree ~a" tree))
+
+(define (git-update-head branch id)
+  (run "" "git update-ref refs/heads/~a ~a" branch id))
