@@ -7,9 +7,12 @@
 ;; by the Free Software Foundation, either version 3 of the License,
 ;; or (at your opinion) any later version.
 #lang scheme/base
-(require aegis/branch)
+(require scheme/system
+         scheme/file
+         aegis/branch)
 (provide ae-repository
-         ae-read-project)
+         ae-read-project
+         ae-checkout)
 
 (define ae-repository
   (make-parameter (build-path (find-system-path 'temp-dir) "aegis/repository")
@@ -24,3 +27,9 @@
 (define (ae-read-project project)
   `((project . ,project)
     (trunk . ,(ae-read-branch "trunk" (trunk-path project)))))
+
+(define (ae-checkout project filename revision)
+  (let-values (((base file dir?) (split-path filename)))
+    (make-directory* base)
+    (system (format "co -r~a -p ~a,v > ~a"
+                    revision (history-path project filename) filename))))
