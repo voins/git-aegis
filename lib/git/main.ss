@@ -15,7 +15,10 @@
          git-branch-exists?
          git-checkout
          git-commit
-         git-tag)
+         git-tag
+         git-mktree
+         git-commit-tree
+         git-update-head)
 
 (define (git-init)
   (system "git init >/dev/null 2>/dev/null"))

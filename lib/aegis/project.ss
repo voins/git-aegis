@@ -12,7 +12,8 @@
          aegis/branch)
 (provide ae-repository
          ae-read-project
-         ae-checkout)
+         ae-checkout
+         ae-find)
 
 (define ae-repository
   (make-parameter (build-path (find-system-path 'temp-dir) "aegis/repository")
