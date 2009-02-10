@@ -31,6 +31,6 @@
 
 (define (ae-checkout project filename revision)
   (let-values (((base file dir?) (split-path filename)))
-    (make-directory* base)
-    (system (format "co -r~a -p ~a,v > ~a"
+    (when (path? base) (make-directory* base))
+    (system (format "co -r~a -p ~a,v > ~a 2>/dev/null"
                     revision (history-path project filename) filename))))
