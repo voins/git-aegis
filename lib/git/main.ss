@@ -19,7 +19,8 @@
          git-tag
          git-mktree
          git-commit-tree
-         git-update-head)
+         git-update-head
+         git-current-branch)
 
 (define (git-init)
   (system "git init >/dev/null 2>/dev/null"))
@@ -80,3 +81,8 @@
 
 (define (git-update-head branch id)
   (run "" "git update-ref refs/heads/~a ~a" branch id))
+
+(define (git-current-branch)
+  (regexp-replace #rx"^refs/heads/([^\n]*).*$"
+                  (run "" "git symbolic-ref -q HEAD")
+                  "\\1"))
