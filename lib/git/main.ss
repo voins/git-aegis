@@ -70,7 +70,7 @@
 
 
 (define (git-tag name message)
-  (run message "git tag -F - ~a >/dev/null 2>/dev/null" name))
+  (run message "git tag -F - ~a" name))
 
 
 (define (git-mktree content)
@@ -80,7 +80,8 @@
   (string-trim-right (run message "git commit-tree ~a" tree) #\newline))
 
 (define (git-update-head branch id)
-  (run "" "git update-ref refs/heads/~a ~a" branch id))
+  (system (format "git update-ref refs/heads/~a ~a >/dev/null 2>/dev/null")
+          branch id))
 
 (define (git-current-branch)
   (regexp-replace #rx"^refs/heads/([^\n]*).*$"
