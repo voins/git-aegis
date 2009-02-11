@@ -8,7 +8,8 @@
 ;; or (at your opinion) any later version
 #lang scheme/base
 (require scheme/system
-         scheme/list)
+         scheme/list
+         srfi/13)
 (provide git-init
          git-add
          git-rm
@@ -72,10 +73,10 @@
 
 
 (define (git-mktree content)
-  (run content "git mktree"))
+  (string-trim-right (run content "git mktree") #\newline))
 
 (define (git-commit-tree message tree)
-  (run message "git commit-tree ~a" tree))
+  (string-trim-right (run message "git commit-tree ~a" tree) #\newline))
 
 (define (git-update-head branch id)
   (run "" "git update-ref refs/heads/~a ~a" branch id))
