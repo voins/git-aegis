@@ -9,6 +9,7 @@
 #lang scheme/base
 (require scheme/system
          scheme/file
+         scheme/dict
          aegis/branch)
 (provide ae-repository
          ae-read-project
@@ -34,3 +35,14 @@
     (when (path? base) (make-directory* base))
     (system (format "co -r~a -p ~a,v > ~a 2>/dev/null"
                     revision (history-path project filename) filename))))
+
+(define (ae-find info name)
+  (let* ((info (if (string? info) (ae-read-project info) info))
+         (info (dict-ref info 'trunk info)))
+    (if (string=? (dict-ref info 'branch "") name) info
+        (let ((it (findf (lambda (c) (equal? (dict-ref c 'commit) name))
+                         (dict-ref info 'commit '()))))
+          (if it it
+              (let ((it (dict-ref info 'sub-branch '())))
+                (and (pair? it)
+                     (for/or ((b it)) (ae-find b name)))))))))
