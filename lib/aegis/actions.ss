@@ -7,10 +7,12 @@
 ;; by the Free Software Foundation, either version 3 of the License,
 ;; or (at your opinion) any later version.
 #lang scheme/base
-(require scheme/dict)
+(require scheme/dict
+         aegis/read)
 (provide merge-actions
          branch-actions
-         filter-actions)
+         filter-actions
+         ae-read-actions)
 
 (define (merge-actions actions merged)
   (for/fold ((merged merged)) ((action (dict-ref actions 'actions actions)))
@@ -38,3 +40,17 @@
     (let ((action (assoc filename (dict-ref commit 'actions '()))))
       (if (not action) result
           (append result (list action))))))
+
+(define (ae-read-actions path)
+  `((actions
+     ,@(let ((fs (ae-file->value (path-replace-suffix path ".fs"))))
+         (for/fold ((actions '())) ((src (dict-ref fs 'src '())))
+           (let* ((name    (dict-ref src 'file-name))
+                  (action  (dict-ref src 'action))
+                  (origin  (dict-ref src 'edit-origin '()))
+                  (current (dict-ref src 'edit '()))
+                  (pre     (and (memq action '(modify remove))
+                                (dict-ref origin 'revision #f)))
+                  (post    (and (memq action '(create modify))
+                                (dict-ref current 'revision #f))))
+             (dict-set actions name `(,pre ,post ()))))))))

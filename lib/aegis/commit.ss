@@ -8,45 +8,33 @@
 ;; or (at your opinion) any later version.
 #lang scheme/base
 (require scheme/dict
-         scheme/nest
          scheme/date
          aegis/read
-         aegis/author)
+         aegis/author
+         aegis/actions)
 (provide ae-read-commit)
 
-(define (commit-message info commit)
+(define (commit-message info)
   (let ((brief (dict-ref info 'brief-description ""))
         (full  (dict-ref info 'description "")))
-    (dict-set commit 'message
-              (cond ((string=? full "")  (format "~a" brief))
-                    ((string=? brief "") (format "~a" full))
-                    (else                (format "~a~n~n~a~n" brief full))))))
+    `((message
+       ,(cond ((string=? full "")  (format "~a" brief))
+              ((string=? brief "") (format "~a" full))
+              (else                (format "~a~n~n~a~n" brief full)))))))
 
-(define (commit-history info commit)
+(define (commit-history info)
   (let ((history (findf (lambda (x) (eq? (dict-ref x 'what) 'integrate-pass))
                         (dict-ref info 'history '()))))
-    (if (not history) commit
+    (if (not history) '()
         (let ((date (seconds->date (dict-ref history 'when 0)))
               (who  (ae-author (dict-ref history 'who #f))))
           `((date .   ,(date->string date #t))
             (author . ,(car who))
-            (email .  ,(cdr who))
-            ,@commit)))))
-
-(define (commit-actions fs commit)
-  (define (revision src edit)
-    (dict-ref (dict-ref src edit '()) 'revision #f))
-  (dict-set commit 'actions
-            (for/fold ((actions '())) ((src (dict-ref fs 'src '())))
-              (let ((name   (dict-ref src 'file-name))
-                    (pre    (revision src 'edit-origin))
-                    (post   (revision src 'edit)))
-                (dict-set actions name `(,pre ,post ()))))))
+            (email .  ,(cdr who)))))))
 
 (define (ae-read-commit path)
-  (let ((info   (ae-file->value path))
-        (fs     (ae-file->value (path-replace-suffix path ".fs"))))
-    (nest ((commit-actions fs)
-           (commit-history info)
-           (commit-message info))
-          '())))
+  (let ((info   (ae-file->value path)))
+    (append (commit-message info)
+            (commit-history info)
+            (ae-read-actions path))))
+
