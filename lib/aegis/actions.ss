@@ -31,7 +31,7 @@
 
 
 (define (branch-actions branch)
-  (for/fold ((actions '())) ((commit (dict-ref branch 'commit)))
+  (for/fold ((actions '())) ((commit (dict-ref branch 'commits)))
     (merge-actions commit actions)))
 
 

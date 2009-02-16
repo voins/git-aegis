@@ -41,7 +41,7 @@
          (info (dict-ref info 'trunk info)))
     (if (string=? (dict-ref info 'branch "") name) info
         (let ((it (findf (lambda (c) (equal? (dict-ref c 'commit) name))
-                         (dict-ref info 'commit '()))))
+                         (dict-ref info 'commits '()))))
           (if it it
               (let ((it (dict-ref info 'sub-branch '())))
                 (and (pair? it)
