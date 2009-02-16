@@ -11,6 +11,7 @@
          aegis/read)
 (provide merge-actions
          branch-actions
+         diff-actions
          filter-actions
          ae-read-actions)
 
@@ -33,6 +34,23 @@
 (define (branch-actions branch)
   (for/fold ((actions '())) ((commit (dict-ref branch 'commits)))
     (merge-actions commit actions)))
+
+
+(define (diff-actions branch)
+  (let* ((fs      (branch-actions branch))
+         (actions (dict-ref branch 'actions '()))
+         (result
+          (for/fold ((result '())) ((action actions))
+            (let-values (((name a.pre a.post a.touch) (apply values action)))
+              (let ((old (dict-ref fs name #f)))
+                (if (not old) (dict-set result name `(,a.pre ,a.post ,a.touch))
+                    (let-values (((pre post touch) (apply values old)))
+                      (if (equal? a.post post) result
+                          (dict-set result name `(,post ,a.post ()))))))))))
+    (for/fold ((result result)) ((action fs))
+      (let-values (((name pre post touch) (apply values action)))
+        (if (dict-ref actions name #f) result
+            (dict-set result name `(,post #f ())))))))
 
 
 (define (filter-actions branch filename)
