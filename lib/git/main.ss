@@ -80,8 +80,8 @@
   (string-trim-right (run message "git commit-tree ~a" tree) #\newline))
 
 (define (git-update-head branch id)
-  (system (format "git update-ref refs/heads/~a ~a >/dev/null 2>/dev/null")
-          branch id))
+  (system (format "git update-ref refs/heads/~a ~a >/dev/null 2>/dev/null"
+                  branch id)))
 
 (define (git-current-branch)
   (regexp-replace #rx"^refs/heads/([^\n]*).*$"
