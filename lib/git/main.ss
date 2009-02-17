@@ -20,7 +20,8 @@
          git-mktree
          git-commit-tree
          git-update-head
-         git-current-branch)
+         git-current-branch
+         git-merge)
 
 (define (git-init)
   (system "git init >/dev/null 2>/dev/null"))
@@ -87,3 +88,11 @@
   (regexp-replace #rx"^refs/heads/([^\n]*).*$"
                   (run "" "git symbolic-ref -q HEAD")
                   "\\1"))
+
+(define (git-merge other
+                   #:no-ff (no-ff #f)
+                   #:no-commit (no-commit #f))
+  (system (format "git merge ~a~a~a >/dev/null 2>/dev/null"
+                  (if no-ff  "--no-ff " "")
+                  (if no-commit "--no-commit " "")
+                  other)))
