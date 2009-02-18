@@ -1,6 +1,6 @@
 ;; This file is part of git-aegis
 ;;
-;; Copyright (C) 2009 Alexey Voinov <alxey.v.voinov@gmail.com>
+;; Copyright (C) 2009 Alexey Voinov <alexey.v.voinov@gmail.com>
 ;;
 ;; This is free  software:  you  can redistribute it  and/or  modify
 ;; it under the terms of the GNU General Public License as published
