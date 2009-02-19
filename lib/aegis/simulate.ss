@@ -12,14 +12,14 @@
          aegis/project)
 (provide ae-simulate)
 
-(define (find-start project branch-name branch commit-fs)
+(define (find-start branch-name branch commit-fs)
   (or (for/or ((start commit-fs))
         (with-handlers ((exn:fail? (lambda (x) #f)))
-          (append (ae-simulate project branch (list start))
+          (append (ae-simulate branch (list start))
                   `((,branch-name . ,(car start))))))
       (error 'aegis "not applicable branch: ~s" branch-name)))
 
-(define (ae-simulate project branch fs)
+(define (ae-simulate branch fs)
   (let-values
       (((commit-fs branches)
         (for/fold ((commit-fs (if (null? fs) '(("start")) fs)) (branches '()))
@@ -33,10 +33,10 @@
                        (fs (merge-actions sub-branch (cdar commit-fs))))
                   (values `((,commit-name . ,fs) . ,commit-fs)
                           (append branches
-                                  (find-start project branch-name
+                                  (find-start branch-name
                                               sub-branch commit-fs)))))))))
     (for/fold ((branches branches)) ((sub-branch (dict-ref branch 'sub-branch)))
       (let ((branch-name (dict-ref sub-branch 'branch)))
         (if (dict-ref branches branch-name #f) branches
             (append branches
-                    (find-start project branch-name sub-branch commit-fs)))))))
+                    (find-start branch-name sub-branch commit-fs)))))))
