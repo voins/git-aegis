@@ -17,10 +17,9 @@
 (define (commit-message info)
   (let ((brief (dict-ref info 'brief-description ""))
         (full  (dict-ref info 'description "")))
-    `((message
-       ,(cond ((string=? full "")  (format "~a" brief))
-              ((string=? brief "") (format "~a" full))
-              (else                (format "~a~n~n~a~n" brief full)))))))
+    `((message . ,(cond ((string=? full "") (format "~a" brief))
+                        ((string=? brief "") (format "~a" full))
+                        (else (format "~a~n~n~a~n" brief full)))))))
 
 (define (commit-history info)
   (let ((history (findf (lambda (x) (eq? (dict-ref x 'what) 'integrate-pass))
