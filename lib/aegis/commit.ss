@@ -12,7 +12,9 @@
          aegis/read
          aegis/author
          aegis/actions)
-(provide ae-read-commit)
+(provide ae-read-commit
+         commit-message
+         commit-history)
 
 (define (commit-message info)
   (let ((brief (dict-ref info 'brief-description ""))

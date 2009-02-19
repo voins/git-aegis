@@ -47,11 +47,14 @@
             (ae-read-commit (commit-path path change))))))
 
 (define (ae-read-branch name path)
-  (let* ((info (dict-ref (ae-file->value path) 'branch '()))
-         (sub-branch (dict-ref info 'sub-branch '()))
-         (commits    (sort (dict-ref info 'history '()) <
+  (let* ((info (ae-file->value path))
+         (branch (dict-ref info 'branch '()))
+         (sub-branch (dict-ref branch 'sub-branch '()))
+         (commits    (sort (dict-ref branch 'history '()) <
                            #:key (lambda (x) (dict-ref x 'delta-number)))))
     `((branch . ,name)
+      ,@(commit-message info)
+      ,@(commit-history info)
       (sub-branch . ,(map (lambda (x) (read-sub-branch name path x))
                           sub-branch))
       (commits . ,(map (lambda (x) (read-sub-commit name path sub-branch x))
