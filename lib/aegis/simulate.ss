@@ -24,17 +24,13 @@
       (((commit-fs branches)
         (for/fold ((commit-fs (if (null? fs) '(("start")) fs)) (branches '()))
             ((commit (dict-ref branch 'commits '())))
-          (let ((branch-name (dict-ref commit 'ref-branch #f))
-                (commit-name (dict-ref commit 'commit)))
-            (if (not branch-name)
-                (let ((fs (merge-actions commit (cdar commit-fs))))
-                  (values `((,commit-name . ,fs) . ,commit-fs) branches))
-                (let* ((sub-branch (ae-find branch branch-name))
-                       (fs (merge-actions sub-branch (cdar commit-fs))))
-                  (values `((,commit-name . ,fs) . ,commit-fs)
-                          (append branches
-                                  (find-start branch-name
-                                              sub-branch commit-fs)))))))))
+          (let* ((branch-name (dict-ref commit 'branch #f))
+                 (commit-name (dict-ref commit 'commit))
+                 (fs (merge-actions commit (cdar commit-fs))))
+            (values `((,commit-name . ,fs) . ,commit-fs)
+                    (if (not branch-name) branches
+                        (append branches
+                                (find-start branch-name commit commit-fs))))))))
     (for/fold ((branches branches)) ((sub-branch (dict-ref branch 'sub-branch)))
       (let ((branch-name (dict-ref sub-branch 'branch)))
         (if (dict-ref branches branch-name #f) branches

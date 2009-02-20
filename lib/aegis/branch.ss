@@ -43,7 +43,7 @@
         (change (dict-ref x 'change-number)))
     `((commit . ,(commit-name name delta))
       ,@(if (memq change sub-branch)
-            `((ref-branch . ,(branch-name name change)))
+            (read-sub-branch name path change)
             (ae-read-commit (commit-path path change))))))
 
 (define (ae-read-branch name path)
