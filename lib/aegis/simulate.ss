@@ -32,7 +32,6 @@
                         (append branches
                                 (find-start branch-name commit commit-fs))))))))
     (for/fold ((branches branches)) ((sub-branch (dict-ref branch 'sub-branch)))
-      (let ((branch-name (dict-ref sub-branch 'branch)))
-        (if (dict-ref branches branch-name #f) branches
-            (append branches
-                    (find-start branch-name sub-branch commit-fs)))))))
+      (append branches
+              (find-start (dict-ref sub-branch 'branch)
+                          sub-branch commit-fs)))))

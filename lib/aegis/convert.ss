@@ -48,13 +48,8 @@
       (commit->git project commit)
       (create-branches commit branches)
       (git-checkout branch-name))
-    (let ((closed-branches (for/list ((x (dict-ref branch 'commits '()))
-                                      #:when (dict-ref x 'branch #f))
-                             (dict-ref x 'branch))))
-      (for ((sub-branch (dict-ref branch 'sub-branch '())))
-        (let ((branch-name (dict-ref sub-branch 'branch)))
-          (unless (member branch-name closed-branches)
-            (branch->git project sub-branch branches)))))
+    (for ((sub-branch (dict-ref branch 'sub-branch '())))
+      (branch->git project sub-branch branches))
     (git-checkout current-branch)))
 
 

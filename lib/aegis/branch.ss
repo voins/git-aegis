@@ -56,7 +56,9 @@
       ,@(commit-message info)
       ,@(commit-history info)
       (sub-branch . ,(map (lambda (x) (read-sub-branch name path x))
-                          sub-branch))
+                          (foldl remove sub-branch
+                                 (map (lambda (x) (dict-ref x 'change-number))
+                                      commits))))
       (commits . ,(map (lambda (x) (read-sub-commit name path sub-branch x))
                        commits))
       ,@(ae-read-actions path))))
