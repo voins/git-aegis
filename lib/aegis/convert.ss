@@ -30,12 +30,6 @@
               #:email (dict-ref commit 'email)
               #:date (dict-ref commit 'date)))
 
-
-(define (create-branches commit branches)
-  (let ((commit-name (dict-ref commit 'commit)))
-    (for ((x branches) #:when (equal? (cdr x) commit-name))
-      (git-checkout (car x)))))
-
 (define (branch->git project branch branches)
   (let ((branch-name (dict-ref branch 'branch))
         (current-branch (git-current-branch)))
@@ -46,7 +40,7 @@
           (branch->git project commit branches)
           (git-merge branch-name #:no-ff #t #:no-commit #t)))
       (commit->git project commit)
-      (create-branches commit branches)
+      (for-each git-checkout (dict-ref branches (dict-ref commit 'commit) '()))
       (git-checkout branch-name))
     (for ((sub-branch (dict-ref branch 'sub-branch '())))
       (branch->git project sub-branch branches))
@@ -59,6 +53,6 @@
     (let* ((tree (git-mktree ""))
            (commit (git-commit-tree "Repository initialized" tree)))
       (git-update-head "master" commit)
-      (let ((branches (ae-simulate branch '())))
-        (create-branches '((commit . "start")) branches)
+      (let ((branches (ae-simulate '() branch '())))
+        (for-each git-checkout (dict-ref branches "start" '()))
         (branch->git project branch branches)))))

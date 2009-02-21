@@ -8,30 +8,29 @@
 ;; or (at your opinion) any later version.
 #lang scheme/base
 (require scheme/dict
+         scheme/function
          aegis/actions
          aegis/project)
 (provide ae-simulate)
 
-(define (find-start branch-name branch commit-fs)
-  (or (for/or ((start commit-fs))
-        (with-handlers ((exn:fail? (lambda (x) #f)))
-          (append (ae-simulate branch (list start))
-                  `((,branch-name . ,(car start))))))
-      (error 'aegis "not applicable branch: ~s" branch-name)))
+(define (find-start commit-fs branch branches)
+  (let ((branch-name (dict-ref branch 'branch)))
+    (or (for/or ((start commit-fs))
+          (with-handlers ((exn:fail? (lambda (x) #f)))
+            (dict-update (ae-simulate branches branch (list start))
+                         (car start) (curry cons branch-name) '())))
+        (error 'aegis "not applicable branch: ~s" branch-name))))
 
-(define (ae-simulate branch fs)
-  (let-values
-      (((commit-fs branches)
-        (for/fold ((commit-fs (if (null? fs) '(("start")) fs)) (branches '()))
-            ((commit (dict-ref branch 'commits '())))
-          (let* ((branch-name (dict-ref commit 'branch #f))
-                 (commit-name (dict-ref commit 'commit))
-                 (fs (merge-actions commit (cdar commit-fs))))
-            (values `((,commit-name . ,fs) . ,commit-fs)
-                    (if (not branch-name) branches
-                        (append branches
-                                (find-start branch-name commit commit-fs))))))))
-    (for/fold ((branches branches)) ((sub-branch (dict-ref branch 'sub-branch)))
-      (append branches
-              (find-start (dict-ref sub-branch 'branch)
-                          sub-branch commit-fs)))))
+(define (ae-simulate branches branch fs)
+  (let loop ((commits   (dict-ref branch 'commits '()))
+             (commit-fs (if (null? fs) '(("start")) fs))
+             (branches  branches))
+    (if (null? commits) (foldl (curry find-start commit-fs) branches
+                               (dict-ref branch 'sub-branch))
+        (let* ((commit (car commits))
+               (fs     (merge-actions commit (cdar commit-fs))))
+          (loop (cdr commits)
+                (cons (cons (dict-ref commit 'commit) fs) commit-fs)
+                (if (not (dict-ref commit 'branch #f)) branches
+                    (find-start commit-fs commit branches)))))))
+
