@@ -10,6 +10,9 @@
 (require scheme/system
          scheme/file
          scheme/dict
+         scheme/port
+         net/base64
+         net/qp
          aegis/branch)
 (provide ae-repository
          ae-read-project
@@ -30,11 +33,25 @@
   `((project . ,project)
     (trunk . ,(ae-read-branch "trunk" (trunk-path project)))))
 
-(define (ae-checkout project filename revision)
-  (let-values (((base file dir?) (split-path filename)))
-    (when (path? base) (make-directory* base))
-    (system (format "co -r~a -p ~a,v > ~a 2>/dev/null"
-                    revision (history-path project filename) filename))))
+(define (ae-checkout project filename revision encoding)
+  (let ((tmpfile (make-temporary-file)))
+    (let-values (((base file dir?) (split-path filename)))
+      (when (path? base) (make-directory* base))
+      (system (format "co -r~a -p ~a,v > ~a 2>/dev/null"
+                      revision (history-path project filename) tmpfile))
+      (let ((out (open-output-file filename #:exists 'replace))
+            (in (open-input-file tmpfile)))
+        (case encoding
+          ((none)             (copy-port in out))
+          ((base64)           (base64-decode-stream in out))
+          ((quoted-printable) (qp-decode-stream in out))
+          (else
+           (delete-file tmpfile)
+           (error 'aegis "unknown encoding ~s of file ~a"
+                  encoding filename)))
+        (close-input-port in)
+        (close-output-port out))
+      (delete-file tmpfile))))
 
 (define (ae-find info name)
   (let* ((info (if (string? info) (ae-read-project info) info))

@@ -17,9 +17,10 @@
 
 (define (actions->git project actions)
   (for ((action actions))
-    (let ((name (first action))
-          (rev (third action)))
-      (cond (rev (ae-checkout project name rev)
+    (let ((name     (first action))
+          (rev      (third action))
+          (encoding (fifth action)))
+      (cond (rev (ae-checkout project name rev encoding)
                  (git-add name))
             (else (git-rm name))))))
 
