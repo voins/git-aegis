@@ -1,0 +1,4 @@
+#!/bin/sh
+[ -z "$mzscheme" ] && mzscheme=mzscheme
+[ -z "$git_aegis" ] && git_aegis=$(dirname "$0")
+exec "$mzscheme" -t "$git_aegis/lib.ss" -l aegis -- "$@"
