@@ -1,8 +1,29 @@
 I have a few projects form the past, that was developed using aegis
 software configuration manager [http://aegis.sourceforge.net/]. Since
 then I have migrated to tla, and then to git. But I still want some of
-the code, still kept in backups of aegis repository.
+the code, kept in backups of aegis repository.
 
 This project is an attempt to convert my aegis repository into git
 format. It wasn't meant to be used by end-users. I only care about
 whenever or not this thing will work on my old repos.
+
+If you want to try converting something yourself, you want to install
+recent version of plt scheme [http://www.plt-scheme.org/]. I was using
+version 4.1.3 for developing git-aegis. You will obviously need Git
+and RCS. Aegis itself is not needed. RCS is what aegis used to keep
+history files.
+
+If you have aegis configured to use fhist or aesvt, you're out of
+luck, git-aegis doesn't support them. I have never used aegis -merge,
+so git-aegis doesn't detect merges and I don't know exactly how it
+would behave if there's any.
+
+Using git-aegis is easy:
+
+$ git clone git://github.com/voins/git-aegis.git
+$ cd <somewhere>
+$ <path-to>/git-aegis -l
+project1
+project2
+...
+$ <path-to>/git-aegis project1 project2 ...
